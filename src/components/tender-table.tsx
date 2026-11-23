@@ -10,7 +10,7 @@ export function TenderTable({ rows }: { rows: TenderRow[] }) {
   return <div className="overflow-x-auto"><table className="table min-w-[850px]">
     <thead><tr><th>Consultation</th><th>Domaines</th><th>Échéance</th><th>Pertinence</th><th>Statut</th><th></th></tr></thead>
     <tbody>{rows.map((tender) => <tr key={tender.id}>
-      <td className="max-w-[390px]"><Link href={`/appels-offres/${tender.id}`} className="font-semibold leading-5 hover:text-[#b76d20]">{tender.title}</Link><div className="mt-1 text-[11px] text-[#7b8999]">{tender.buyer} · {tender.department || "France"} {tender.reference && <span className="mono"> · {tender.reference}</span>}</div></td>
+      <td className="max-w-[390px]"><Link href={`/appels-offres/${tender.id}`} className="font-semibold leading-5 hover:text-[#007fa3]">{tender.title}</Link><div className="mt-1 text-[11px] text-[#7b8999]">{tender.buyer} · {tender.department || "France"} {tender.reference && <span className="mono"> · {tender.reference}</span>}</div></td>
       <td><div className="flex max-w-[210px] flex-wrap gap-1">{tender.domains.slice(0, 3).map((domain) => <DomainBadge key={domain} domain={domain} />)}</div></td>
       <td><Deadline value={tender.deadline} /></td>
       <td><Score value={tender.score} /></td>

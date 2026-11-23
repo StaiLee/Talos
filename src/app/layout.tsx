@@ -5,6 +5,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: { default: "Talos · Paritel", template: "%s · Talos" },
   description: "Centre de pilotage des appels d’offres Paritel",
+  icons: { icon: "/favicon.svg" },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

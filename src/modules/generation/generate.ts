@@ -22,7 +22,7 @@ function pdfBuffer(lines: { text: string; heading?: boolean }[]) {
   const chunks: Buffer[] = [];
   pdf.on("data", (chunk) => chunks.push(chunk));
   for (const line of lines) {
-    if (line.heading) pdf.moveDown(0.7).font("Helvetica-Bold").fontSize(14).fillColor("#142b45").text(line.text);
+    if (line.heading) pdf.moveDown(0.7).font("Helvetica-Bold").fontSize(14).fillColor("#0c2340").text(line.text);
     else pdf.font("Helvetica").fontSize(10).fillColor("#253448").text(line.text, { lineGap: 4 });
   }
   pdf.end();

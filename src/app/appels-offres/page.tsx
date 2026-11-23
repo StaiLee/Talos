@@ -35,7 +35,7 @@ export default async function TendersPage({ searchParams }: { searchParams: Prom
     <PageHeader eyebrow="Pipeline commercial" title="Appels d’offres" description={`Consultations affichées : ${list.length} · Nouvelles opportunités à qualifier : ${rows.filter((row) => row.status === "detecte").length}.`} actions={<><Link href="/appels-offres/nouveau" className="btn"><Plus size={15} />Nouveau</Link><CollectButton /></>} />
     <div className="mb-4 flex flex-wrap gap-1 rounded-xl border border-[#dfe5eb] bg-white p-1">{views.map((view) => {
       const count = rows.filter((row) => view.slug === "nouveaux" ? row.status === "detecte" : view.slug === "en_cours" ? ["en_cours", "shortliste", "poc"].includes(row.status) : view.slug === "archives" ? isArchivedStatus(row.status) : true).length;
-      return <Link key={view.slug} href={`/appels-offres?view=${view.slug}`} className={`rounded-lg px-4 py-2 text-xs font-semibold transition ${currentView === view.slug ? "bg-[#142b45] text-white" : "text-[#65758a] hover:bg-[#f4f6f8]"}`}>{view.label}<span className={`ml-2 ${currentView === view.slug ? "text-white/60" : "text-[#a0acb9]"}`}>{count}</span></Link>;
+      return <Link key={view.slug} href={`/appels-offres?view=${view.slug}`} className={`rounded-lg px-4 py-2 text-xs font-semibold transition ${currentView === view.slug ? "bg-[#0c2340] text-white" : "text-[#65758a] hover:bg-[#f4f6f8]"}`}>{view.label}<span className={`ml-2 ${currentView === view.slug ? "text-white/60" : "text-[#a0acb9]"}`}>{count}</span></Link>;
     })}</div>
     <div className="card mb-5 p-4"><form className="grid gap-3 md:grid-cols-[1fr_190px_190px_auto]">
       <input type="hidden" name="view" value={currentView} />

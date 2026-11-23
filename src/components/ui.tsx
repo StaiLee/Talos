@@ -3,7 +3,7 @@ import { daysUntil, formatDate } from "@/lib/utils";
 
 export function PageHeader({ eyebrow, title, description, actions }: { eyebrow?: string; title: string; description?: string; actions?: React.ReactNode }) {
   return <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-    <div>{eyebrow && <div className="mb-2 text-[10px] font-bold uppercase tracking-[.16em] text-[#b76d20]">{eyebrow}</div>}<h1 className="text-[28px] font-bold tracking-[-.035em] text-[#142b45]">{title}</h1>{description && <p className="mt-2 max-w-3xl text-sm leading-6 text-[#65758a]">{description}</p>}</div>
+    <div>{eyebrow && <div className="mb-2 text-[10px] font-bold uppercase tracking-[.16em] text-[#007fa3]">{eyebrow}</div>}<h1 className="text-[28px] font-bold tracking-[-.035em] text-[#0c2340]">{title}</h1>{description && <p className="mt-2 max-w-3xl text-sm leading-6 text-[#65758a]">{description}</p>}</div>
     {actions && <div className="flex shrink-0 gap-2">{actions}</div>}
   </div>;
 }
@@ -31,6 +31,6 @@ export function GoBadge({ value }: { value: string }) {
 }
 
 export function Score({ value }: { value: number | null }) {
-  const color = (value ?? 0) >= 75 ? "#168265" : (value ?? 0) >= 55 ? "#c57d2a" : "#8290a1";
+  const color = (value ?? 0) >= 75 ? "#168265" : (value ?? 0) >= 55 ? "#007fa3" : "#8290a1";
   return <div className="flex items-center gap-2"><div className="h-1.5 w-14 overflow-hidden rounded-full bg-[#e8edf1]"><div className="h-full rounded-full" style={{ width: `${value ?? 0}%`, background: color }} /></div><span className="text-xs font-bold" style={{ color }}>{value ?? "—"}</span></div>;
 }

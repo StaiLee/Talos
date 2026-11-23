@@ -16,10 +16,10 @@ const navigation = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  return <aside className="fixed inset-y-0 left-0 z-30 hidden w-[238px] flex-col bg-[#102a43] text-white lg:flex">
-    <Link href="/" className="flex h-[76px] items-center gap-3 border-b border-white/10 px-6">
-      <Image src="/talos-mark.svg" alt="" width={36} height={36} />
-      <div><div className="text-[19px] font-bold tracking-[.16em]">TALOS</div><div className="text-[10px] text-white/55">PARITEL · APPELS D’OFFRES</div></div>
+  return <aside className="fixed inset-y-0 left-0 z-30 hidden w-[238px] flex-col bg-[#0c2340] text-white lg:flex">
+    <Link href="/" className="flex h-[84px] items-center gap-3 border-b border-white/10 px-5" aria-label="Talos · Paritel">
+      <Image src="/logo-paritel-blanc.svg" alt="Paritel" width={88} height={43} priority />
+      <div className="border-l border-white/20 pl-3"><div className="text-[18px] font-bold tracking-[.16em]">TALOS</div><div className="text-[9px] text-white/55">APPELS D’OFFRES</div></div>
     </Link>
     <nav className="flex-1 space-y-1 px-3 py-6">
       {navigation.map((item) => {
