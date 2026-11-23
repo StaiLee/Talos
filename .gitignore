@@ -11,4 +11,5 @@ storage/
 ProjetTalos/
 Suivi AO.md
 *.log
+*.traineddata
 .DS_Store
