@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { activityEvents, db, documents, requirements, tenders } from "@/lib/db";
+import { activityEvents, capabilities, db, documents, requirements, tenders } from "@/lib/db";
 import { generateStructured } from "@/modules/ai/client";
 
 const analysisSchema = z.object({
@@ -15,6 +15,16 @@ const analysisSchema = z.object({
   criteria: z.array(z.object({ label: z.string(), weight: z.number().nullable() })),
   subcontractingAllowed: z.boolean().nullable(),
   lots: z.array(z.string()),
+  qualification: z.object({
+    decision: z.enum(["go", "sous_conditions", "no_go"]),
+    rationale: z.string(),
+    matches: z.array(z.object({
+      requirement: z.string(),
+      capability: z.string().nullable(),
+      status: z.enum(["conforme", "sous_conditions", "non_documente"]),
+      note: z.string(),
+    })),
+  }),
 });
 
 function categoryFor(text: string) {
@@ -60,12 +70,15 @@ export async function analyzeTender(tenderId: string) {
   const readable = documentList.filter((document) => ["extrait", "ocr_effectue"].includes(document.status) && document.extractedText);
   if (!readable.length) throw new Error("Aucun document exploitable. Importer un DCE ou traiter l’OCR.");
   const heuristic = heuristicRequirements(readable);
-  const corpus = readable.map((document) => `DOCUMENT: ${document.filename}\n${document.extractedText}`).join("\n\n").slice(0, 90_000);
+  const capabilityList = await db.select().from(capabilities).orderBy(capabilities.category, capabilities.label);
+  const corpus = readable.map((document) => `DOCUMENT: ${document.filename}\n${document.extractedText}`).join("\n\n").slice(0, 60_000);
+  const capabilityCorpus = capabilityList.map((capability) => `${capability.category} · ${capability.label} · ${capability.status === "valide" ? "VALIDÉ" : "À VÉRIFIER"}${capability.evidence ? ` · Preuve: ${capability.evidence}` : ""}`).join("\n").slice(0, 20_000) || "Aucune capacité Paritel enregistrée.";
   const ai = await generateStructured({
     operation: "analyse_dce",
     tenderId,
     schema: analysisSchema,
-    prompt: `Tu analyses un dossier d'appel d'offres pour Paritel. N'invente aucune exigence. Extrais uniquement les exigences explicitement présentes, avec une courte preuve textuelle. Signale les critères, lots et règles de sous-traitance lorsqu'ils sont documentés.\n\n${corpus}`,
+    maxOutputTokens: 6_000,
+    prompt: `Tu analyses un dossier d'appel d'offres pour Paritel. N'invente aucune exigence. Extrais uniquement les exigences explicitement présentes, avec une courte preuve textuelle. Signale les critères, lots et règles de sous-traitance lorsqu'ils sont documentés. Compare ensuite les besoins aux capacités Paritel fournies. Seule une capacité VALIDÉ peut être présentée comme acquise. Une capacité À VÉRIFIER ou absente implique sous_conditions ou non_documente. Ne fixe aucun prix et ne valide pas les engagements juridiques ou de niveau de service sans preuve.\n\nCAPACITÉS PARITEL:\n${capabilityCorpus}\n\nDOCUMENTS:\n${corpus}`,
   });
   const aiRequirements = (ai?.requirements ?? []).map((requirement) => ({
     tenderId,
@@ -83,10 +96,10 @@ export async function analyzeTender(tenderId: string) {
   if (all.length) await db.insert(requirements).values(all);
   await db.update(tenders).set({
     status: tender.status === "detecte" ? "en_cours" : tender.status,
-    goDecision: "sous_conditions",
-    metadata: { ...tender.metadata, analysis: ai ? { summary: ai.summary, criteria: ai.criteria, subcontractingAllowed: ai.subcontractingAllowed, lots: ai.lots } : { mode: "regles", note: "Analyse IA non configurée" }, analyzedAt: new Date().toISOString() },
+    goDecision: ai?.qualification.decision ?? "sous_conditions",
+    metadata: { ...tender.metadata, analysis: ai ? { summary: ai.summary, criteria: ai.criteria, subcontractingAllowed: ai.subcontractingAllowed, lots: ai.lots, qualification: ai.qualification } : { mode: "regles", note: "Analyse IA non configurée" }, analyzedAt: new Date().toISOString() },
     updatedAt: new Date(),
   }).where(eq(tenders.id, tenderId));
   await db.insert(activityEvents).values({ tenderId, type: "analyse", message: `${all.length} exigences extraites · ${ai ? "IA + règles" : "règles déterministes"}`, metadata: { documents: readable.length } });
-  return { requirements: all.length, ai: Boolean(ai), documents: readable.length };
+  return { requirements: all.length, ai: Boolean(ai), documents: readable.length, summary: ai?.summary, qualification: ai?.qualification, criteria: ai?.criteria ?? [] };
 }

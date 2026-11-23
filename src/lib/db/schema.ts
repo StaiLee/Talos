@@ -118,6 +118,7 @@ export const aiUsage = pgTable("ai_usage", {
   outputTokens: integer("output_tokens").notNull().default(0),
   cachedTokens: integer("cached_tokens").notNull().default(0),
   costEuros: numeric("cost_euros", { precision: 12, scale: 6 }).notNull().default("0"),
+  currency: text("currency").notNull().default("EUR"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [index("ai_usage_created_idx").on(table.createdAt)]);
 

@@ -15,7 +15,7 @@ export async function ocrPdf(buffer: Buffer) {
     await writeFile(input, buffer);
     await execFileAsync("pdftoppm", ["-png", "-r", "160", input, path.join(directory, "page")], { timeout: 120_000 });
     const pages = (await readdir(directory)).filter((file) => /^page-\d+\.png$/.test(file)).sort();
-    worker = await createWorker("fra");
+    worker = await createWorker("fra", undefined, { workerPath: path.join(process.cwd(), "node_modules", "tesseract.js", "src", "worker-script", "node", "index.js") });
     const texts: string[] = [];
     for (const [index, page] of pages.entries()) {
       const result = await worker.recognize(await readFile(path.join(directory, page)));

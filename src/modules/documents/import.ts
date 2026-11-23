@@ -10,7 +10,7 @@ export async function importDocument(tenderId: string, file: File) {
   if (buffer.length > 100 * 1024 * 1024) throw new Error("Le fichier dépasse 100 Mo");
   const sha256 = createHash("sha256").update(buffer).digest("hex");
   const [existing] = await db.select().from(documents).where(and(eq(documents.tenderId, tenderId), eq(documents.sha256, sha256))).limit(1);
-  if (existing) return existing;
+  if (existing) return ["extrait", "ocr_effectue"].includes(existing.status) ? existing : extractDocument(existing.id);
   const detected = detectDocument(buffer, file.name);
   const stored = await storeBuffer(tenderId, file.name, buffer);
   const [document] = await db.insert(documents).values({

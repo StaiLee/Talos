@@ -5,7 +5,7 @@ import { Document, HeadingLevel, Packer, Paragraph, TextRun } from "docx";
 import ExcelJS from "exceljs";
 import PDFDocument from "pdfkit";
 import { z } from "zod";
-import { db, documents, requirements, responses, tenders } from "@/lib/db";
+import { capabilities, db, documents, requirements, responses, tenders } from "@/lib/db";
 import { storageRoot } from "@/modules/documents/storage";
 import { generateStructured } from "@/modules/ai/client";
 import { formatDate } from "@/lib/utils";
@@ -34,11 +34,14 @@ export async function generateResponse(tenderId: string) {
   if (!tender) throw new Error("AO introuvable");
   const requirementList = await db.select().from(requirements).where(eq(requirements.tenderId, tenderId));
   const documentList = await db.select().from(documents).where(eq(documents.tenderId, tenderId));
+  const capabilityList = await db.select().from(capabilities).where(eq(capabilities.status, "valide"));
+  const analysis = tender.metadata.analysis as { summary?: string } | undefined;
   const ai = await generateStructured({
     operation: "redaction_memoire",
     tenderId,
     schema: responseSchema,
-    prompt: `Rédige des paragraphes sobres et professionnels pour un projet de mémoire technique Paritel. N'affirme aucune capacité non fournie et ne fixe aucun prix. Utilise un ton direct, sans superlatifs.\nAO: ${tender.title}\nAcheteur: ${tender.buyer}\nDescription: ${tender.description ?? ""}\nExigences: ${requirementList.map((item) => item.description).join("\n").slice(0, 35_000)}`,
+    maxOutputTokens: 5_000,
+    prompt: `Rédige des paragraphes sobres, précis et professionnels pour un projet de mémoire technique Paritel. N'affirme aucune capacité absente de la liste VALIDÉE et ne fixe aucun prix. Utilise un ton direct, sans superlatifs. Réponds au besoin précis du client et distingue les points restant à valider.\nAO: ${tender.title}\nAcheteur: ${tender.buyer}\nDescription: ${tender.description ?? ""}\nSynthèse: ${analysis?.summary ?? "Non disponible"}\nCapacités Paritel validées: ${capabilityList.map((item) => `${item.category}: ${item.label}`).join("\n") || "Aucune"}\nExigences: ${requirementList.map((item) => item.description).join("\n").slice(0, 35_000)}`,
   });
   const [versionRow] = await db.select({ value: max(responses.version) }).from(responses).where(eq(responses.tenderId, tenderId));
   const version = Number(versionRow?.value ?? 0) + 1;
@@ -98,6 +101,10 @@ export async function generateResponse(tenderId: string) {
     { kind: "memoire_pdf", filename: path.basename(pdfPath), storagePath: pdfPath },
     { kind: "conformite_xlsx", filename: path.basename(xlsxPath), storagePath: xlsxPath },
   ];
-  for (const item of generated) await db.insert(responses).values({ ...item, tenderId, version, status: "brouillon" });
-  return { version, files: generated.map((item) => item.filename), ai: Boolean(ai) };
+  const saved = [];
+  for (const item of generated) {
+    const [response] = await db.insert(responses).values({ ...item, tenderId, version, status: "brouillon" }).returning({ id: responses.id, kind: responses.kind, filename: responses.filename });
+    saved.push(response);
+  }
+  return { version, files: generated.map((item) => item.filename), documents: saved, ai: Boolean(ai) };
 }
