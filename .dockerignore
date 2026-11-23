@@ -1,0 +1,9 @@
+node_modules
+.next
+.git
+ProjetTalos
+Suivi AO.md
+storage
+*.log
+.env
+.env.*

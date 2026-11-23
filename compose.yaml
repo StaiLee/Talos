@@ -1,0 +1,74 @@
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: talos
+      POSTGRES_USER: talos
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-talos}
+    volumes:
+      - talos-db:/var/lib/postgresql
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U talos -d talos"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  migrate:
+    build:
+      context: .
+      target: worker
+    command: ["npm", "run", "db:migrate"]
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://talos:${POSTGRES_PASSWORD:-talos}@db:5432/talos
+
+  web:
+    build:
+      context: .
+      target: runner
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgresql://talos:${POSTGRES_PASSWORD:-talos}@db:5432/talos
+      STORAGE_DIR: /app/storage
+      AI_BASE_URL: ${AI_BASE_URL:-https://api.moonshot.ai/v1}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_MODEL: ${AI_MODEL:-}
+      AI_MODEL_FAST: ${AI_MODEL_FAST:-}
+      AI_INPUT_PRICE_PER_MTOK: ${AI_INPUT_PRICE_PER_MTOK:-0}
+      AI_OUTPUT_PRICE_PER_MTOK: ${AI_OUTPUT_PRICE_PER_MTOK:-0}
+    volumes:
+      - talos-storage:/app/storage
+    ports:
+      - "127.0.0.1:3000:3000"
+
+  worker:
+    build:
+      context: .
+      target: worker
+    profiles: ["workers"]
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgresql://talos:${POSTGRES_PASSWORD:-talos}@db:5432/talos
+      STORAGE_DIR: /app/storage
+      AJI_ENABLED: ${AJI_ENABLED:-true}
+    volumes:
+      - talos-storage:/app/storage
+      - talos-camoufox:/root/.cache/camoufox
+
+volumes:
+  talos-db:
+  talos-storage:
+  talos-camoufox:

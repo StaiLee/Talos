@@ -1,0 +1,9 @@
+import { analyzeTender } from "@/modules/analysis/analyze";
+
+export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    return Response.json(await analyzeTender((await params).id));
+  } catch (error) {
+    return Response.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
+  }
+}
