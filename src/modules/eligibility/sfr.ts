@@ -18,7 +18,7 @@ type SfrOffer = {
 };
 
 export async function checkSfrEligibility(address: string, evidencePath: string) {
-  const browser = await Camoufox({ headless: true, os: "linux" });
+  const browser = await Camoufox({ headless: true, os: "linux", env: { MOZ_DISABLE_CONTENT_SANDBOX: "1" } });
   try {
     const page = await browser.newPage();
     await page.goto("https://www.sfrbusiness.fr/internet/eligibilite-fibre/", { waitUntil: "domcontentloaded", timeout: 45_000 });

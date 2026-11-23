@@ -11,7 +11,7 @@ export async function retrieveDce(tenderId: string) {
   const [row] = await db.select({ tender: tenders, source: sources }).from(tenders).leftJoin(sources, eq(tenders.sourceId, sources.id)).where(eq(tenders.id, tenderId)).limit(1);
   if (!row?.tender.url) throw new Error("Aucun lien source disponible");
   if (row.source?.slug !== "aji") throw new Error(`Récupération automatique ${row.source?.name ?? "de cette source"} non configurée. Ouvrez la source puis importez le DCE.`);
-  const browser = await Camoufox({ headless: true, os: "linux" });
+  const browser = await Camoufox({ headless: true, os: "linux", env: { MOZ_DISABLE_CONTENT_SANDBOX: "1" } });
   try {
     const page = await browser.newPage();
     await page.addInitScript("globalThis.__name = (fn) => fn;");

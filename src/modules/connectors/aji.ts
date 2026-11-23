@@ -17,7 +17,7 @@ export async function collectAji(): Promise<CollectionResult> {
   const [run] = await db.insert(collectionRuns).values({ sourceId: source.id }).returning();
   let browser;
   try {
-    browser = await Camoufox({ headless: true, os: "linux" });
+    browser = await Camoufox({ headless: true, os: "linux", env: { MOZ_DISABLE_CONTENT_SANDBOX: "1" } });
     const records: NormalizedTender[] = [];
     const page = await browser.newPage();
     await page.addInitScript("globalThis.__name = (fn) => fn;");

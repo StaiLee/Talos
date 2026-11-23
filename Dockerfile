@@ -19,6 +19,7 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=dependencies /app/node_modules ./node_modules
+RUN ./node_modules/.bin/playwright-core install-deps firefox
 RUN mkdir -p /app/storage /home/nextjs/.cache/camoufox && chown -R nextjs:nodejs /app/storage /home/nextjs
 USER nextjs
 EXPOSE 3000
@@ -30,6 +31,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 COPY package.json package-lock.json ./
 COPY --from=dependencies /app/node_modules ./node_modules
+RUN ./node_modules/.bin/playwright-core install-deps firefox
 COPY tsconfig.json drizzle.config.ts ./
 COPY src ./src
 COPY drizzle ./drizzle
