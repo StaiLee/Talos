@@ -46,6 +46,8 @@ services:
       AI_MODEL_FAST: ${AI_MODEL_FAST:-}
       AI_INPUT_PRICE_PER_MTOK: ${AI_INPUT_PRICE_PER_MTOK:-0}
       AI_OUTPUT_PRICE_PER_MTOK: ${AI_OUTPUT_PRICE_PER_MTOK:-0}
+      TALOS_AUTH_USER: ${TALOS_AUTH_USER:-talos}
+      TALOS_AUTH_PASSWORD: ${TALOS_AUTH_PASSWORD:-}
     volumes:
       - talos-storage:/app/storage
     ports:
