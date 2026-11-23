@@ -50,6 +50,7 @@ services:
       TALOS_AUTH_PASSWORD: ${TALOS_AUTH_PASSWORD:-}
     volumes:
       - talos-storage:/app/storage
+      - talos-camoufox:/home/nextjs/.cache/camoufox
     ports:
       - "127.0.0.1:3000:3000"
 

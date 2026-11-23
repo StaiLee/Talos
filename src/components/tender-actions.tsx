@@ -1,10 +1,10 @@
 "use client";
 
-import { FileOutput, Play, Upload } from "lucide-react";
+import { FileOutput, FolderDown, Play, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 
-export function TenderActions({ tenderId, goDecision }: { tenderId: string; goDecision: string }) {
+export function TenderActions({ tenderId, goDecision, status }: { tenderId: string; goDecision: string; status: string }) {
   const [loading, setLoading] = useState("");
   const [message, setMessage] = useState("");
   const input = useRef<HTMLInputElement>(null);
@@ -16,7 +16,7 @@ export function TenderActions({ tenderId, goDecision }: { tenderId: string; goDe
       const response = await fetch(`/api/tenders/${tenderId}/${name}`, { method: "POST" });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error);
-      setMessage(name === "analyze" ? `${result.requirements} exigences · ${result.ai ? "IA" : "règles"}` : `Dossier v${result.version} généré`);
+      setMessage(name === "analyze" ? `${result.requirements} exigences · ${result.ai ? "IA" : "règles"}` : name === "dce" ? `${result.imported} document(s) récupéré(s)` : `Dossier v${result.version} généré`);
       router.refresh();
     } catch (error) { setMessage(error instanceof Error ? error.message : String(error)); }
     finally { setLoading(""); }
@@ -37,8 +37,8 @@ export function TenderActions({ tenderId, goDecision }: { tenderId: string; goDe
     finally { setLoading(""); if (input.current) input.current.value = ""; }
   }
 
-  async function updateGo(value: string) {
-    await fetch(`/api/tenders/${tenderId}`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ goDecision: value }) });
+  async function updateField(field: "goDecision" | "status", value: string) {
+    await fetch(`/api/tenders/${tenderId}`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ [field]: value }) });
     router.refresh();
   }
 
@@ -46,10 +46,14 @@ export function TenderActions({ tenderId, goDecision }: { tenderId: string; goDe
     <div className="flex flex-wrap gap-2">
       <input ref={input} type="file" multiple className="hidden" onChange={(event) => upload(event.target.files)} accept=".pdf,.docx,.xlsx,.xlsm,.csv,.txt,.xml" />
       <button className="btn" disabled={Boolean(loading)} onClick={() => input.current?.click()}><Upload size={15} />Importer DCE</button>
+      <button className="btn" disabled={Boolean(loading)} onClick={() => action("dce")}><FolderDown size={15} />{loading === "dce" ? "Récupération…" : "Récupérer le DCE"}</button>
       <button className="btn btn-primary" disabled={Boolean(loading)} onClick={() => action("analyze")}><Play size={15} />{loading === "analyze" ? "Analyse…" : "Analyser"}</button>
       <button className="btn btn-accent" disabled={Boolean(loading)} onClick={() => action("generate")}><FileOutput size={15} />{loading === "generate" ? "Génération…" : "Générer le dossier"}</button>
-      <select className="input !w-auto !py-2 text-xs" value={goDecision} onChange={(event) => updateGo(event.target.value)}>
+      <select className="input !w-auto !py-2 text-xs" value={goDecision} onChange={(event) => updateField("goDecision", event.target.value)}>
         <option value="a_evaluer">À évaluer</option><option value="go">Go validé</option><option value="sous_conditions">Sous conditions</option><option value="no_go">No-Go</option>
+      </select>
+      <select className="input !w-auto !py-2 text-xs" value={status} onChange={(event) => updateField("status", event.target.value)}>
+        <option value="detecte">Nouveau</option><option value="en_cours">En cours</option><option value="depose">Déposé</option><option value="shortliste">Shortlisté</option><option value="poc">POC</option><option value="gagne">Gagné</option><option value="perdu_non_retenu">Perdu · non retenu</option><option value="perdu_soutenance">Perdu · soutenance</option><option value="archive">Archivé</option>
       </select>
     </div>
     {message && <div className="text-xs text-[#65758a]">{message}</div>}

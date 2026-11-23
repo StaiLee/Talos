@@ -3,11 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Coins, LayoutDashboard, Radio, ScrollText, Settings } from "lucide-react";
+import { BookOpen, Coins, LayoutDashboard, MapPinCheck, Radio, ScrollText, Settings } from "lucide-react";
 
 const navigation = [
   { href: "/", label: "Vue d’ensemble", icon: LayoutDashboard },
   { href: "/appels-offres", label: "Appels d’offres", icon: ScrollText },
+  { href: "/eligibilite", label: "Éligibilité fibre", icon: MapPinCheck },
   { href: "/sources", label: "Sources & collecte", icon: Radio },
   { href: "/connaissances", label: "Base Paritel", icon: BookOpen },
   { href: "/consommation", label: "Tokens & coûts", icon: Coins },

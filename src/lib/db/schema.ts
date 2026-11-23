@@ -121,6 +121,21 @@ export const aiUsage = pgTable("ai_usage", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [index("ai_usage_created_idx").on(table.createdAt)]);
 
+export const eligibilityChecks = pgTable("eligibility_checks", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  tenderId: uuid("tender_id").references(() => tenders.id, { onDelete: "cascade" }),
+  address: text("address").notNull(),
+  operator: text("operator").notNull(),
+  status: text("status").notNull().default("en_cours"),
+  ftthEligible: boolean("ftth_eligible"),
+  fttoEligible: boolean("ftto_eligible"),
+  summary: text("summary"),
+  offers: jsonb("offers").$type<{ name: string; technology: string; description?: string }[]>().notNull().default([]),
+  evidencePath: text("evidence_path"),
+  checkedAt: timestamp("checked_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [index("eligibility_tender_idx").on(table.tenderId)]);
+
 export const activityEvents = pgTable("activity_events", {
   id: uuid("id").primaryKey().defaultRandom(),
   tenderId: uuid("tender_id").references(() => tenders.id, { onDelete: "cascade" }),

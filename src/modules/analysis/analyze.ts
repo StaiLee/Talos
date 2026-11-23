@@ -57,7 +57,7 @@ export async function analyzeTender(tenderId: string) {
   const [tender] = await db.select().from(tenders).where(eq(tenders.id, tenderId)).limit(1);
   if (!tender) throw new Error("AO introuvable");
   const documentList = await db.select().from(documents).where(eq(documents.tenderId, tenderId));
-  const readable = documentList.filter((document) => document.status === "extrait" && document.extractedText);
+  const readable = documentList.filter((document) => ["extrait", "ocr_effectue"].includes(document.status) && document.extractedText);
   if (!readable.length) throw new Error("Aucun document exploitable. Importer un DCE ou traiter l’OCR.");
   const heuristic = heuristicRequirements(readable);
   const corpus = readable.map((document) => `DOCUMENT: ${document.filename}\n${document.extractedText}`).join("\n\n").slice(0, 90_000);

@@ -11,18 +11,20 @@ COPY . .
 RUN npm run build
 
 FROM node:24-bookworm-slim AS runner
+RUN apt-get update && apt-get install -y --no-install-recommends poppler-utils && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1
 RUN groupadd --system nodejs && useradd --system --gid nodejs nextjs
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-RUN mkdir -p /app/storage && chown nextjs:nodejs /app/storage
+RUN mkdir -p /app/storage /home/nextjs/.cache/camoufox && chown -R nextjs:nodejs /app/storage /home/nextjs
 USER nextjs
 EXPOSE 3000
 CMD ["node", "server.js"]
 
 FROM node:24-bookworm-slim AS worker
+RUN apt-get update && apt-get install -y --no-install-recommends poppler-utils && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 ENV NODE_ENV=production
 COPY package.json package-lock.json ./

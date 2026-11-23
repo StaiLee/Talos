@@ -5,6 +5,7 @@ import mammoth from "mammoth";
 import { extractText, getDocumentProxy } from "unpdf";
 import { db, documents } from "@/lib/db";
 import { detectDocument } from "./storage";
+import { ocrPdf } from "./ocr";
 
 async function extractPdf(buffer: Buffer) {
   const pdf = await getDocumentProxy(new Uint8Array(buffer));
@@ -39,13 +40,22 @@ export async function extractDocument(documentId: string) {
     else if (detected.format === "xlsx") result = await extractExcel(buffer);
     else if (detected.format === "text") result = { text: buffer.toString("utf8"), pages: 1 };
     else throw new Error(`Format ${detected.format} non pris en charge`);
-    const ocrRequired = detected.format === "pdf" && result.text.replace(/\s/g, "").length < 100;
+    let ocrRequired = detected.format === "pdf" && result.text.replace(/\s/g, "").length < 100;
+    let ocrPerformed = false;
+    if (ocrRequired) {
+      const ocrText = await ocrPdf(buffer);
+      if (ocrText.replace(/\s/g, "").length >= 100) {
+        result = { ...result, text: ocrText };
+        ocrRequired = false;
+        ocrPerformed = true;
+      }
+    }
     const [updated] = await db.update(documents).set({
-      status: ocrRequired ? "ocr_requis" : "extrait",
+      status: ocrRequired ? "ocr_requis" : ocrPerformed ? "ocr_effectue" : "extrait",
       extractedText: result.text,
       pageCount: result.pages,
       mimeType: detected.mimeType,
-      metadata: { ...document.metadata, detectedFormat: detected.format, ocrRequired },
+      metadata: { ...document.metadata, detectedFormat: detected.format, ocrRequired, ocrPerformed },
     }).where(eq(documents.id, documentId)).returning();
     return updated;
   } catch (error) {

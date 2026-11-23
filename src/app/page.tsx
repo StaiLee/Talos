@@ -8,6 +8,7 @@ import { TenderTable } from "@/components/tender-table";
 import { PageHeader, StatusBadge } from "@/components/ui";
 import { DOMAIN_LABELS } from "@/lib/constants";
 import { formatDateTime, formatNumber } from "@/lib/utils";
+import { isArchivedStatus } from "@/lib/tender-lifecycle";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ export default async function Dashboard() {
   const sourceRows = await db.select().from(sources).orderBy(sources.name);
   const usageRows = await db.select().from(aiUsage);
   const events = await db.select().from(activityEvents).orderBy(desc(activityEvents.createdAt)).limit(5);
-  const active = list.filter((tender) => ["detecte", "en_cours", "depose", "shortliste", "poc"].includes(tender.status));
+  const active = list.filter((tender) => !isArchivedStatus(tender.status));
   const urgent = await db.select({ id: tenders.id }).from(tenders).where(and(ne(tenders.status, "archive"), gte(tenders.deadline, sqlExpression`CURRENT_TIMESTAMP`), lte(tenders.deadline, sqlExpression`CURRENT_TIMESTAMP + INTERVAL '14 days'`)));
   const totalTokens = usageRows.reduce((total, item) => total + item.inputTokens + item.outputTokens, 0);
   const domains = Object.entries(active.flatMap((tender) => tender.domains).reduce<Record<string, number>>((acc, domain) => ({ ...acc, [domain]: (acc[domain] ?? 0) + 1 }), {})).map(([name, value]) => ({ name: DOMAIN_LABELS[name] ?? name, value })).sort((a, b) => b.value - a.value).slice(0, 6);

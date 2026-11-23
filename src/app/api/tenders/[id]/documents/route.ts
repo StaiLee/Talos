@@ -1,5 +1,7 @@
 import { importDocument } from "@/modules/documents/import";
 
+export const maxDuration = 300;
+
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
