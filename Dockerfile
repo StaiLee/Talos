@@ -18,6 +18,7 @@ RUN groupadd --system nodejs && useradd --system --gid nodejs nextjs
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=dependencies /app/node_modules ./node_modules
 RUN mkdir -p /app/storage /home/nextjs/.cache/camoufox && chown -R nextjs:nodejs /app/storage /home/nextjs
 USER nextjs
 EXPOSE 3000
