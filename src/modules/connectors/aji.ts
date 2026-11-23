@@ -56,7 +56,7 @@ export async function collectAji(): Promise<CollectionResult> {
           buyer,
           city,
           department,
-          description: `${row.category} · ${row.procedure}`,
+          description: row.category.trim(),
           url: row.href,
           publishedAt: parseDate(row.published),
           deadline,

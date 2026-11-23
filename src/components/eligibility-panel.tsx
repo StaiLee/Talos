@@ -42,7 +42,7 @@ export function EligibilityPanel({ tenderId, initialAddress = "", initialChecks 
   return <div className="space-y-5">
     <form onSubmit={submit} className="grid gap-3 md:grid-cols-[1fr_180px_auto]">
       <input className="input" value={address} onChange={(event) => setAddress(event.target.value)} placeholder="N°, rue, code postal et ville" required />
-      <select className="input" value={operator} onChange={(event) => setOperator(event.target.value)}><option value="sfr">SFR Business · public</option><option value="orange">Orange · accès Paritel</option><option value="helios">Helios · interne</option></select>
+      <select className="input" value={operator} onChange={(event) => setOperator(event.target.value)}><option value="sfr">SFR Business</option><option value="orange">Orange · accès Paritel</option><option value="helios">Helios · interne</option></select>
       <button className="btn btn-primary" disabled={loading || initialChecks.some((check) => check.status === "en_cours")}><MapPinCheck size={15} />{loading || initialChecks.some((check) => check.status === "en_cours") ? "Test en cours…" : "Tester l’éligibilité"}</button>
     </form>
     {error && <div className="text-xs text-red-700">{error}</div>}

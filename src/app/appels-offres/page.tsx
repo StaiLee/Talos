@@ -32,7 +32,7 @@ export default async function TendersPage({ searchParams }: { searchParams: Prom
     return !query || `${tender.title} ${tender.buyer} ${tender.reference ?? ""}`.toLowerCase().includes(query);
   });
   return <div className="mx-auto max-w-[1500px] px-5 py-7 lg:px-8">
-    <PageHeader eyebrow="Pipeline commercial" title="Appels d’offres" description={`${list.length} consultation(s) affichée(s) · ${rows.filter((row) => row.status === "detecte").length} nouvelles opportunités à qualifier.`} actions={<><Link href="/appels-offres/nouveau" className="btn"><Plus size={15} />Nouveau</Link><CollectButton /></>} />
+    <PageHeader eyebrow="Pipeline commercial" title="Appels d’offres" description={`Consultations affichées : ${list.length} · Nouvelles opportunités à qualifier : ${rows.filter((row) => row.status === "detecte").length}.`} actions={<><Link href="/appels-offres/nouveau" className="btn"><Plus size={15} />Nouveau</Link><CollectButton /></>} />
     <div className="mb-4 flex flex-wrap gap-1 rounded-xl border border-[#dfe5eb] bg-white p-1">{views.map((view) => {
       const count = rows.filter((row) => view.slug === "nouveaux" ? row.status === "detecte" : view.slug === "en_cours" ? ["en_cours", "shortliste", "poc"].includes(row.status) : view.slug === "archives" ? isArchivedStatus(row.status) : true).length;
       return <Link key={view.slug} href={`/appels-offres?view=${view.slug}`} className={`rounded-lg px-4 py-2 text-xs font-semibold transition ${currentView === view.slug ? "bg-[#142b45] text-white" : "text-[#65758a] hover:bg-[#f4f6f8]"}`}>{view.label}<span className={`ml-2 ${currentView === view.slug ? "text-white/60" : "text-[#a0acb9]"}`}>{count}</span></Link>;

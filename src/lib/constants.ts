@@ -8,6 +8,17 @@ export const STATUS_LABELS: Record<string, string> = {
   perdu_soutenance: "Perdu · soutenance",
   gagne: "Gagné",
   archive: "Archivé",
+  termine: "Terminé",
+  importe: "Importé",
+  extrait: "Extrait",
+  ocr_effectue: "OCR effectué",
+  ocr_requis: "OCR requis",
+  brouillon: "Brouillon",
+  active: "Opérationnelle",
+  erreur: "Erreur",
+  eligible: "Éligible",
+  non_eligible: "Non éligible",
+  a_configurer: "À configurer",
 };
 
 export const DOMAIN_LABELS: Record<string, string> = {

@@ -38,7 +38,7 @@ export async function retrieveDce(tenderId: string) {
       imported += 1;
     }
     await db.update(tenders).set({ metadata: { ...row.tender.metadata, dce: { retrievedAt: new Date().toISOString(), address, submission, criteria, requiredDocuments } }, updatedAt: new Date() }).where(eq(tenders.id, tenderId));
-    await db.insert(activityEvents).values({ tenderId, type: "dce", message: `${imported} document(s) AJI récupéré(s) et analysé(s)`, metadata: { documents: links.length } });
+    await db.insert(activityEvents).values({ tenderId, type: "dce", message: `Documents AJI récupérés et traités : ${imported}`, metadata: { documents: links.length } });
     return { imported, address, submission, criteria, requiredDocuments };
   } finally {
     await browser.close();
