@@ -3,6 +3,7 @@ import { Camoufox } from "camoufox";
 import { activityEvents, collectionRuns, db, sources, tenders } from "@/lib/db";
 import { detectDomains, isNonCoreWork, relevanceScore } from "./relevance";
 import type { CollectionResult, NormalizedTender } from "./types";
+import { cleanText } from "./text";
 
 function parseDate(value: string, withTime = false) {
   const match = value.match(/(\d{2})\/(\d{2})\/(\d{4})(?:\s+à\s+(\d{2})h(\d{2}))?/);
@@ -43,8 +44,8 @@ export async function collectAji(): Promise<CollectionResult> {
       for (const row of rows) {
         if (!row.reference || !row.title) continue;
         const buyerLines = row.buyer.split("\n").map((line) => line.trim()).filter(Boolean);
-        const buyer = buyerLines[0] || row.buyer || "EPLE";
-        const city = buyerLines[1];
+        const buyer = cleanText(buyerLines[0] || row.buyer || "EPLE");
+        const city = buyerLines[1] ? cleanText(buyerLines[1]) : undefined;
         const department = row.department.match(/\((\d{2,3})\)/)?.[1];
         const domains = detectDomains(`${row.title} ${row.category}`);
         const deadline = parseDate(row.deadline, true);
@@ -52,11 +53,11 @@ export async function collectAji(): Promise<CollectionResult> {
         records.push({
           externalId: row.reference,
           reference: row.reference,
-          title: row.title,
+          title: cleanText(row.title),
           buyer,
           city,
           department,
-          description: row.category.trim(),
+          description: cleanText(row.category),
           url: row.href,
           publishedAt: parseDate(row.published),
           deadline,

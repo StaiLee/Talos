@@ -3,6 +3,7 @@ import { collectionRuns, db, sources, tenders } from "@/lib/db";
 import { activityEvents } from "@/lib/db/schema";
 import { detectDomains, isNonCoreWork, relevanceScore } from "./relevance";
 import type { CollectionResult, NormalizedTender } from "./types";
+import { cleanText } from "./text";
 
 const endpoint = "https://boamp-datadila.opendatasoft.com/api/explore/v2.1/catalog/datasets/boamp/records";
 const keywords = ["telephonie", "telecommunications", "fibre optique", "FTTO", "FTTH", "VoIP", "Wi-Fi", "cybersecurite", "firewall", "forfait mobile"];
@@ -41,8 +42,9 @@ function firstText(data: unknown, keys: string[]) {
 function normalize(record: BoampRecord): NormalizedTender {
   let details: unknown = {};
   try { details = record.donnees ? JSON.parse(record.donnees) : {}; } catch { details = {}; }
-  const title = record.objet?.trim() || firstText(details, ["OBJET_COMPLET"]) || "Appel d’offres télécom";
-  const description = firstText(details, ["description", "PRINCIPALES", "QUANTITE"]);
+  const title = cleanText(record.objet?.trim() || firstText(details, ["OBJET_COMPLET"]) || "Appel d’offres télécom");
+  const descriptionValue = firstText(details, ["description", "PRINCIPALES", "QUANTITE"]);
+  const description = descriptionValue ? cleanText(descriptionValue) : undefined;
   const profileUrl = firstText(details, ["BuyerProfileURI", "URL_PROFIL_ACHETEUR"]);
   const cpv = firstText(details, ["classPrincipale"]) ?? record.descripteur_code?.join(",");
   const department = Array.isArray(record.code_departement) ? record.code_departement.join(",") : record.code_departement;
@@ -51,7 +53,7 @@ function normalize(record: BoampRecord): NormalizedTender {
     externalId: record.idweb,
     reference: record.idweb,
     title,
-    buyer: record.nomacheteur || "Acheteur public",
+    buyer: cleanText(record.nomacheteur || "Acheteur public"),
     department,
     description,
     cpv,

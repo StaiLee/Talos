@@ -15,7 +15,8 @@
     "db:seed": "tsx src/lib/db/seed.ts",
     "collect:boamp": "tsx src/workers/collect-boamp.ts",
     "collect:aji": "tsx src/workers/collect-aji.ts",
-    "worker": "tsx src/workers/scheduler.ts"
+    "worker": "tsx src/workers/scheduler.ts",
+    "clean:text": "tsx src/workers/clean-text.ts"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^3.0.0",
@@ -25,6 +26,7 @@
     "drizzle-orm": "^0.45.4",
     "exceljs": "^4.4.0",
     "fflate": "^0.8.3",
+    "he": "^2.0.0",
     "lucide-react": "^0.577.0",
     "mammoth": "^1.11.0",
     "next": "^16.4.6",
@@ -40,6 +42,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.0",
+    "@types/he": "^1.2.3",
     "@types/node": "^24.10.0",
     "@types/pdfkit": "^0.17.5",
     "@types/react": "^19.2.0",

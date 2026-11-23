@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 
 export default async function TenderDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [row] = await db.select({ tender: tenders, sourceName: sources.name, sourceSlug: sources.slug }).from(tenders).leftJoin(sources, eq(tenders.sourceId, sources.id)).where(eq(tenders.id, id)).limit(1);
+  const [row] = await db.select({ tender: tenders, sourceName: sources.name, sourceSlug: sources.slug, sourceUrl: sources.url }).from(tenders).leftJoin(sources, eq(tenders.sourceId, sources.id)).where(eq(tenders.id, id)).limit(1);
   if (!row) notFound();
   const tender = row.tender;
   const documentList = await db.select().from(documents).where(eq(documents.tenderId, id)).orderBy(desc(documents.createdAt));
@@ -24,10 +24,11 @@ export default async function TenderDetail({ params }: { params: Promise<{ id: s
   const eligibilityList = await db.select().from(eligibilityChecks).where(eq(eligibilityChecks.tenderId, id)).orderBy(desc(eligibilityChecks.createdAt));
   const analysis = tender.metadata.analysis as { summary?: string; note?: string } | undefined;
   const dce = tender.metadata.dce as { address?: string; submission?: string; criteria?: string; requiredDocuments?: string } | undefined;
+  const officialUrl = tender.url || (row.sourceUrl?.includes("talos.local") ? undefined : row.sourceUrl);
   return <div className="mx-auto max-w-[1500px] px-5 py-7 lg:px-8">
     <Link href="/appels-offres" className="mb-5 inline-flex items-center gap-2 text-xs font-semibold text-[#65758a]"><ArrowLeft size={14} />Retour au pipeline</Link>
     <PageHeader eyebrow={`${row.sourceName ?? "Source"} · ${tender.reference ?? "Sans référence"}`} title={tender.title} description={tender.description ?? "La description sera enrichie par l’analyse du DCE."} actions={<StatusBadge status={tender.status} />} />
-    <div className="card mb-5 flex flex-col justify-between gap-4 p-5 md:flex-row md:items-center"><div><div className="text-[10px] font-bold uppercase tracking-[.12em] text-[#8290a1]">Annonce publiée sur</div><div className="mt-1 text-lg font-bold">{row.sourceName ?? "Import manuel"}</div><div className="mt-1 text-xs text-[#65758a]">C’est le site officiel utilisé pour consulter l’offre et, selon le règlement, déposer la réponse.</div></div><div className="flex flex-wrap items-center gap-2">{tender.url && <a href={tender.url} target="_blank" rel="noreferrer" className="btn btn-primary">Ouvrir l’annonce officielle <ExternalLink size={15} /></a>}{["boamp", "aji"].includes(row.sourceSlug ?? "") && <CollectButton source={row.sourceSlug!} label="Actualiser la source" />}</div></div>
+    <div className="card mb-5 flex flex-col justify-between gap-4 p-5 md:flex-row md:items-center"><div><div className="text-[10px] font-bold uppercase tracking-[.12em] text-[#8290a1]">Annonce publiée sur</div><div className="mt-1 text-lg font-bold">{row.sourceName ?? "Import manuel"}</div><div className="mt-1 text-xs text-[#65758a]">C’est le site officiel utilisé pour consulter l’offre et, selon le règlement, déposer la réponse.{!tender.url && <span className="mt-1 block text-[#b76d20]">Lien direct non fourni. Ouvrez la plateforme et utilisez la référence {tender.reference ?? "de l’offre"} pour la retrouver.</span>}</div></div><div className="flex flex-wrap items-center gap-2">{officialUrl && <a href={officialUrl} target="_blank" rel="noreferrer" className="btn btn-primary">{tender.url ? "Ouvrir l’annonce officielle" : "Ouvrir la plateforme"} <ExternalLink size={15} /></a>}{["boamp", "aji"].includes(row.sourceSlug ?? "") && <CollectButton source={row.sourceSlug!} label="Actualiser la source" />}</div></div>
     <div className="mb-5"><GuidedWorkflow tenderId={tender.id} sourceSlug={row.sourceSlug ?? undefined} documentCount={documentList.length} requirementCount={requirementList.length} responseCount={responseList.length} goDecision={tender.goDecision} status={tender.status} /></div>
     <section className="grid gap-5 xl:grid-cols-[1.6fr_1fr]">
       <div className="space-y-5">
