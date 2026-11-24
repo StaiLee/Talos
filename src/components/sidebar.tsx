@@ -35,6 +35,6 @@ export function Sidebar() {
       <div className="flex items-center gap-2 text-xs font-medium"><span className="h-2 w-2 rounded-full bg-emerald-400" />Plateforme opérationnelle</div>
       <div className="mt-1.5 text-[10px] leading-relaxed text-white/45">Données sources · contrôle humain · aucune réponse automatique sans validation</div>
     </div>
-    <div className="flex items-center gap-2 border-t border-white/10 px-6 py-4 text-xs text-white/50"><Settings size={14} /> POC · v0.1</div>
+    <div className="flex items-center gap-2 border-t border-white/10 px-6 py-4 text-xs text-white/50"><Settings size={14} /> POC · v1.0</div>
   </aside>;
 }
